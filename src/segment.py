@@ -13,7 +13,7 @@ from deeplabv3 import DeeplabV3Plus
 class Segmenter():
     def __init__(self,path_to_weights):
         self.publisher = rospy.Publisher("road_points",PointCloud2,queue_size=100)
-        self.model
+        self.model = []
         self.num_classes = 1
         self.img_height = 128
         self.path = path_to_weights
@@ -40,6 +40,7 @@ class Segmenter():
         # Publish PCloud
 
         # Convert intensity values to 255 scale?
+        op = op*255
 
         # Publish
         array['intensity'] = op # Need to change dtpye?
