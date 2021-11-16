@@ -33,6 +33,9 @@ class Segmenter():
         image_tensor = image_tensor /255
 
         op = self.model.predict(np.expand_dims((image_tensor), axis=0))
+        op  = np.squeeze(op)
+        op = np.round(op)
+        op = np.expand_dims(op,axis=-1)
 
         # Publish PCloud
 
@@ -46,10 +49,16 @@ class Segmenter():
 
 def main():
     rospy.init_node("Road_Segment",anonymous=True)
+    weights_file  = " "
+    segmenter = Segmenter(weights_file)
 
-    pc_sub = rospy.Subscriber("/os_cloud_node/points",PointCloud2,pc_cb)
-    pc_sub = msgf.Subscriber("/os_cloud_node/points")
-    img_sub = msgf/msgf.Subscriber("/img_node/signal_image")
+    pc_sub = msgf.Subscriber("/os_cloud_node/points",PointCloud2)
+    img_sub = msgf.Subscriber("/img_node/signal_image",Image)
+
+    ats = msgf.ApproximateTimeSynchronizer([pc_sub,img_sub],10,0.00001)
+
+    ats.registerCallback(segmenter.pc_cb)
+
 
 
     while(not rospy.is_shutdown()):
