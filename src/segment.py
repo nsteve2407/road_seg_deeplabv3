@@ -3,6 +3,8 @@
 import rospy
 from sensor_msgs.msg import PointCloud2, Image
 import ros_numpy
+import message_filters as msgf
+import cv_bridge
 
 
 
@@ -33,12 +35,16 @@ class Segmenter():
         self.publisher.publish(msg)
 
 
-rospy.init_node("Road_Segment",anonymous=True)
+def main():
+    rospy.init_node("Road_Segment",anonymous=True)
 
-pc_sub = rospy.Subscriber("/os_cloud_node/points",PointCloud2,pc_cb)
+    pc_sub = rospy.Subscriber("/os_cloud_node/points",PointCloud2,pc_cb)
+    pc_sub = msgf.Subscriber("/os_cloud_node/points")
+    img_sub = msgf/msgf.Subscriber("/img_node/signal_image")
 
-while(not rospy.is_shutdown()):
-    rospy.spin()
+
+    while(not rospy.is_shutdown()):
+        rospy.spin()
 
 # Left
 # Add time_synchronizer
