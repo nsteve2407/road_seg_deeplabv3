@@ -5,32 +5,41 @@ from sensor_msgs.msg import PointCloud2, Image
 import ros_numpy
 import message_filters as msgf
 import cv_bridge
-
+import tensorflow as tf
+import numpy as np
+from deeplabv3 import DeeplabV3Plus
 
 
 class Segmenter():
-    def __init__(self):
+    def __init__(self,path_to_weights):
         self.publisher = rospy.Publisher("road_points",PointCloud2,queue_size=100)
         self.model
+        self.num_classes = 1
+        self.img_height = 128
+        self.path = path_to_weights
 
-    def init_model():
+    def init_model(self):
+        self.model = DeeplabV3Plus(self.img_height,self.num_classes)
+        self.model.load_weights(self.path)
 
-    def pc_cb(self,pc_data,image):
+    def pc_cb(self,pc_data,image_msg):
         array = ros_numpy.point_cloud2.pointcloud2_to_array(pc_data)
-        
-        # Pass through model
-        # Preprocess Image
-        
-        model = DeepLabv3()
-        model.load_weights()
-        op = model.predict(image)
+        bridge = cv_bridge.CvBridge()
+        img = bridge.imgmsg_to_cv2(image_msg)
+
+        image_tensor = tf.convert_to_tensor(img)
+        image_tensor.set_shape([None, None, 3])
+        image_tensor = tf.image.resize(images=image_tensor, size=[128, 1024])
+        image_tensor = image_tensor /255
+
+        op = self.model.predict(np.expand_dims((image_tensor), axis=0))
 
         # Publish PCloud
 
         # Convert intensity values to 255 scale?
 
         # Publish
-        array['intensity'] = op
+        array['intensity'] = op # Need to change dtpye?
         msg = ros_numpy.point_cloud2.array_to_pointcloud2(array)
         self.publisher.publish(msg)
 
