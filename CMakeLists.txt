@@ -9,8 +9,7 @@ project(road_seg_deeplabv3)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   rospy
-  sensor_msgs/Image
-  sensor_msgs/PointCloud2
+
 )
 
 ## System dependencies are found with CMake's conventions
