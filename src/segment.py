@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 import rospy
 from sensor_msgs.msg import PointCloud2, Image
@@ -8,15 +8,17 @@ import cv_bridge
 import tensorflow as tf
 import numpy as np
 from deeplabv3 import DeeplabV3Plus
+import cv2
 
 
 class Segmenter():
     def __init__(self,path_to_weights):
         self.publisher = rospy.Publisher("road_points",PointCloud2,queue_size=100)
-        self.model = []
         self.num_classes = 1
         self.img_height = 128
         self.path = path_to_weights
+        self.model = DeeplabV3Plus(self.img_height,self.num_classes)
+        self.model.load_weights(self.path)
 
     def init_model(self):
         self.model = DeeplabV3Plus(self.img_height,self.num_classes)
@@ -25,7 +27,7 @@ class Segmenter():
     def pc_cb(self,pc_data,image_msg):
         array = ros_numpy.point_cloud2.pointcloud2_to_array(pc_data)
         bridge = cv_bridge.CvBridge()
-        img = bridge.imgmsg_to_cv2(image_msg)
+        img = bridge.imgmsg_to_cv2(image_msg,desired_encoding="bgr8")
 
         image_tensor = tf.convert_to_tensor(img)
         image_tensor.set_shape([None, None, 3])
@@ -35,7 +37,7 @@ class Segmenter():
         op = self.model.predict(np.expand_dims((image_tensor), axis=0))
         op  = np.squeeze(op)
         op = np.round(op)
-        op = np.expand_dims(op,axis=-1)
+        # op = np.expand_dims(op,axis=-1)
 
         # Publish PCloud
 
@@ -43,14 +45,16 @@ class Segmenter():
         op = op*255
 
         # Publish
-        array['intensity'] = op # Need to change dtpye?
-        msg = ros_numpy.point_cloud2.array_to_pointcloud2(array)
+        pcd = np.copy(array)
+        pcd['intensity'] = op.astype('<f4') # Need to change dtpye?
+        msg = ros_numpy.point_cloud2.array_to_pointcloud2(pcd)
+        msg.header.frame_id = pc_data.header.frame_id
         self.publisher.publish(msg)
 
 
 def main():
     rospy.init_node("Road_Segment",anonymous=True)
-    weights_file  = " "
+    weights_file  = "/home/mkz/catkin_ws/src/road_seg_deeplabv3/weights/acc945.h5"
     segmenter = Segmenter(weights_file)
 
     pc_sub = msgf.Subscriber("/os_cloud_node/points",PointCloud2)
@@ -60,13 +64,15 @@ def main():
 
     ats.registerCallback(segmenter.pc_cb)
 
+    rospy.spin()
 
 
-    while(not rospy.is_shutdown()):
-        rospy.spin()
+
+
 
 # Left
 # Add time_synchronizer
 # Define model in Class,load weights
 # Preprocess ip image
-
+if __name__ == "__main__":
+    main()
