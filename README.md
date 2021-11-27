@@ -13,6 +13,7 @@ https://user-images.githubusercontent.com/91099619/143667401-f051cf09-a954-4ea5-
 
 ### Architecture
 The repo makes use of [DeepLabv3 plus](https://arxiv.org/abs/1802.02611) - a state of the art 2D image segmentation model pretrained on the [Imagenet Dataset](https://image-net.org/)
+The model was the trained on 200 annotated LiDAR images collected using an Ouster LiDAR
 ### File Structure
 -> launch : launch file for ROS node
 -> src : source code for ROS node.
