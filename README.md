@@ -29,8 +29,9 @@ The model was trained on 200 annotated LiDAR images collected using an Ouster Li
  > git clone
  
 Check the path to weights file on line 57 in segment.py
+
 After making the workspace, run
 > roslaunch road_seg_deeplabv3 segment.launch
 
-
+To train the model use 'deeplabv3_plus.ipynb' The images and masks must be placed in a folder called data inside the main directory.
 
