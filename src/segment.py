@@ -63,6 +63,7 @@ class Segmenter():
         pcd['intensity'] = op_rs.astype('<f4') # Need to change dtpye?
         msg = ros_numpy.point_cloud2.array_to_pointcloud2(pcd)
         msg.header = pc_data.header
+        msg.header.stamp = rospy.Time.now() #commont if realtime use
         self.publisher.publish(msg)
 
         if self.publish_image:
