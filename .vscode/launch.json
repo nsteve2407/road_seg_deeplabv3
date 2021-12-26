@@ -8,7 +8,7 @@
             "name": "ROS: Launch",
             "type": "ros",
             "request": "launch",
-            "target": "/home/mkz/catkin_ws/src/road_seg_deeplabv3/launch/collect_data.launch"
+            "target": "/home/mkz/catkin_ws/src/road_seg_deeplabv3/launch/s-layer.launch"
         },
         {
             "name": "ROS: Attach",
