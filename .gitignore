@@ -10,6 +10,10 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+data/s_layer/masks/
+data/s_layer/cropped/
+data/s_layer/2k
+
 build/
 develop-eggs/
 dist/
