@@ -76,7 +76,7 @@ def DeeplabV3Plus(image_size, num_classes):
 
 
 class Segmenter():
-    def __init__(self,path_to_weights,publish_image=True):
+    def __init__(self,path_to_weights,publish_image=True,publish_tv=True):
         self.publisher = rospy.Publisher("road_points",PointCloud2,queue_size=100)
         self.num_classes = 1
         self.img_height = 288
@@ -84,7 +84,10 @@ class Segmenter():
         self.model = DeeplabV3Plus(self.img_height,self.num_classes)
         self.model.load_weights(self.path)
         self.img_publisher = rospy.Publisher("road_segment_image",Image,queue_size=100)
+        self.tv_publisher  = rospy.Publisher("road_segment_image_top_view",Image,queue_size=100)
         self.publish_image = publish_image
+        self.publish_top_view  = publish_tv
+        self.TV_m = np.load("/home/mkz/catkin_ws/src/road_seg_deeplabv3/data/mono/TV_tf.npy")
 
     def decode_segmentation_masks(self,mask, colormap, n_classes):
         
@@ -173,8 +176,17 @@ class Segmenter():
         rgb_mask = tf.image.resize(images=rgb_mask, size=[crop, 640])
         # rgb_mask = tf.image.resize(images=rgb_mask, size=[img.shape[0],img.shape[1]])
         segmented_image = self.get_overlay(np.stack([img,img,img],axis=-1),rgb_mask)
-        segmented_image = bridge.cv2_to_imgmsg(segmented_image,"bgr8")
-        self.img_publisher.publish(segmented_image)
+        segmented_image_msg = bridge.cv2_to_imgmsg(segmented_image,"bgr8")
+        self.img_publisher.publish(segmented_image_msg)
+
+        if self.publish_top_view:
+            img_tv = cv2.warpPerspective(segmented_image,self.TV_m,dsize=(segmented_image.shape[1],segmented_image[0]))
+            img_tv_msg = bridge.cv2_to_imgmsg(img_tv,encoding='bgr8')
+            img_tv_msg.header.stamp = image_msg.header.stamp
+            self.tv_publisher.publish(img_tv_msg)
+
+
+
 
 
 
