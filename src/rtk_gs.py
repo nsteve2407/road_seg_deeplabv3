@@ -87,7 +87,7 @@ class Segmenter():
         self.tv_publisher  = rospy.Publisher("road_segment_image_top_view",Image,queue_size=100)
         self.publish_image = publish_image
         self.publish_top_view  = publish_tv
-        self.TV_m = np.load("/home/mkz/catkin_ws/src/road_seg_deeplabv3/data/mono/TV_tf.npy")
+        self.TV_m = np.load("/home/mkz/catkin_ws/src/road_seg_deeplabv3/data/mono/TV_2.npy")
 
     def decode_segmentation_masks(self,mask, colormap, n_classes):
         
@@ -180,7 +180,7 @@ class Segmenter():
         self.img_publisher.publish(segmented_image_msg)
 
         if self.publish_top_view:
-            img_tv = cv2.warpPerspective(segmented_image,self.TV_m,dsize=(segmented_image.shape[1],segmented_image[0]))
+            img_tv = cv2.warpPerspective(segmented_image,self.TV_m,dsize=(segmented_image.shape[1],segmented_image.shape[0]))
             img_tv_msg = bridge.cv2_to_imgmsg(img_tv,encoding='bgr8')
             img_tv_msg.header.stamp = image_msg.header.stamp
             self.tv_publisher.publish(img_tv_msg)
