@@ -24,9 +24,9 @@ class Segmenter():
 
     def decode_segmentation_masks(self,mask, colormap, n_classes):
         
-        g = np.zeros_like(mask).astype(np.float32)
+        r = np.zeros_like(mask).astype(np.float32)
         b = np.zeros_like(mask).astype(np.float32)
-        r = mask
+        g = mask
         rgb = np.stack([b, g, r],axis=-1)
         rgb = np.reshape(rgb,(128,512,3))
         # print('Source mask shape:{}'.format(rgb.shape))
@@ -35,7 +35,7 @@ class Segmenter():
 
     def get_overlay(self,image, colored_mask):
         # np.reshape(colored_mask,(128,512,3))
-        overlay = cv2.addWeighted(image, 0.8, colored_mask.astype(np.uint8), 70.0, 0)
+        overlay = cv2.addWeighted(image, 0.8, colored_mask.numpy().astype(np.uint8), 70.0, 0)
         return overlay
 
     def pc_cb(self,pc_data,image_msg):
@@ -77,20 +77,44 @@ class Segmenter():
             segmented_image = bridge.cv2_to_imgmsg(segmented_image,"bgr8")
             self.img_publisher.publish(segmented_image)
 
+    def img_cb(self,image_msg):
+        bridge = cv_bridge.CvBridge()
+        img = bridge.imgmsg_to_cv2(image_msg,desired_encoding="mono8")
+        img = img[:320,:]
+        img_c  = bridge.imgmsg_to_cv2(image_msg,desired_encoding="bgr8")
+        img_c = img_c[:320,:,:]
+        image_tensor = tf.convert_to_tensor(img)
+
+        image_tensor = tf.stack([image_tensor,image_tensor,image_tensor],axis=-1)
+        image_tensor = tf.expand_dims(image_tensor,0)
+
+        image_tensor = tf.image.resize(images=image_tensor, size=[128, 512])
+        image_tensor = image_tensor /255
+
+        op = self.model.predict(image_tensor)
+        op = np.squeeze(op)
+        op = np.expand_dims(op,axis=-1)        
+        rgb_mask = self.decode_segmentation_masks(op,[],self.num_classes)
+        rgb_mask = tf.image.resize(images=rgb_mask, size=[320, 640])
+        segmented_image = self.get_overlay(np.stack([img,img,img],axis=-1),rgb_mask)
+        segmented_image = bridge.cv2_to_imgmsg(segmented_image,"bgr8")
+        self.img_publisher.publish(segmented_image)
 
 
 
 def main():
     rospy.init_node("Road_Segment",anonymous=True)
-    weights_file  = "/home/mkz/catkin_ws/src/road_seg_deeplabv3/weights/s_layer-best.h5"
+    weights_file  = "/home/mkz/catkin_ws/src/road_seg_deeplabv3/weights/gs_model_90_78iou.h5"
     segmenter = Segmenter(weights_file)
 
-    pc_sub = msgf.Subscriber("/os_cloud_node/points",PointCloud2)
-    img_sub = msgf.Subscriber("/img_node/signal_image",Image)
+    # pc_sub = msgf.Subscriber("/os_cloud_node/points",PointCloud2)
+    # img_sub = msgf.Subscriber("/img_node/signal_image",Image)
 
-    ats = msgf.ApproximateTimeSynchronizer([pc_sub,img_sub],10,0.00001)
+    # ats = msgf.ApproximateTimeSynchronizer([pc_sub,img_sub],10,0.00001)
 
-    ats.registerCallback(segmenter.pc_cb)
+    # ats.registerCallback(segmenter.pc_cb)
+
+    img_sub = rospy.Subscriber("/usb_cam/image_raw",Image,segmenter.img_cb)
 
     rospy.spin()
 

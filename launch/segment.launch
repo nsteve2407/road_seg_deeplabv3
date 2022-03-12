@@ -2,6 +2,6 @@
 
 <launch>
 
-<node name="road_segmenter" pkg="road_seg_deeplabv3" type="segment.py"/>
+<node name="road_segmenter" pkg="road_seg_deeplabv3" type="rtk_gs_stereo.py"/>
 
 </launch>
