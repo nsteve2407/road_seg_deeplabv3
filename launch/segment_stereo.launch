@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+
+<launch>
+
+<node name="road_segmenter" pkg="road_seg_deeplabv3" type="rtk_gs_stereo.py"/>
+
+</launch>
