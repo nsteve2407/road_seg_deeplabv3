@@ -5,8 +5,7 @@ Road surface segmentation in 3D pointclouds can be computationally intensive as 
 The current work focuses on leveraging the feature learning abilities  of Convolutional Neural Networks on 2D images to segment the road in 3D pointclouds, by treating the pointcloud as a range image. Initial results show an accuracy of ~94% as well as reasonable runtime of 10Hz.
 The trained model has been packaged as a ROS node for further use.
 
-
-https://user-images.githubusercontent.com/91099619/143667401-f051cf09-a954-4ea5-b054-5c844688aef1.mp4
+![demo](https://github.com/nsteve2407/nsteve2407/blob/main/road-seg.gif)
 
 
 
