@@ -3,7 +3,7 @@
 
 Road surface segmentation in 3D pointclouds can be computationally intensive as this may require 3D convolutions. On the other hand more classical approaches to segment road surfaces typically focus on identifying features to differentiate between road and non- road points. This approach usually requires proper identification of features as well as their threshold values.
 The current work focuses on leveraging the feature learning abilities  of Convolutional Neural Networks on 2D images to segment the road in 3D pointclouds, by treating the pointcloud as a range image. Initial results show an accuracy of ~94% as well as reasonable runtime of 10Hz.
-The trained model has been packaged as a ROS node for further use.
+The trained model has been packaged as a ROS node for further use. Note: Model in the video has been trained for Ouster 128 Lidar
 
 ![demo](https://github.com/nsteve2407/road_seg_deeplabv3/blob/main/segmentation-demo.gif)
 
